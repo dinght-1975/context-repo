@@ -66,14 +66,36 @@ git clone https://github.com/dinght-1975/context-repo.git
 
 ## 第 2 步：发现工作空间 Agent 列表
 
-从**工作空间配置目录**读取当前可用 Agent，再决定同步目标：
+从**工作空间配置** + **平台 API** 获取当前主机下可用的 Agent，再决定同步目标：
 
 1. 读取 `.ai_studio/config.json`：
-   - `default_agent` — 缺省 Agent
-   - `theme` — 用于查主题级 Agent 列表
-2. 读取平台 `config/themes.yaml` 中该 `theme` 的 `default_agents`（若本地 AI_STUDIO 仓库可访问）。
-3. 交叉校验：Agent id 须存在于 `config/ai_studio.yaml` 的 `agents`。
-4. **待同步 Agent 列表** = `default_agents`（有则用之）且包含 `default_agent`；若仅有 `default_agent` 则只同步该 Agent。
+   - `slug` — 工作空间 id（可选，用于 workspace 级主题接口）
+   - `default_agent` — 实例缺省 Agent
+   - `theme` — 主题 id（缺省 `standard`）
+2. 调用平台 API 获取该主题的 Agent 列表（**优先于**本地读 `config/themes.yaml`）：
+
+```bash
+curl -s "http://localhost:8000/api/v1/themes/{theme_id}"
+```
+
+- `{theme_id}` 取上一步 `config.json` 的 `theme`
+- **公开接口，无需登录**
+- 从响应 `theme.default_agents` 得到当前主机下该主题**可使用的 Agent id 列表**
+- 同时读取 `theme.default_agent` 作为主题缺省 Agent
+
+响应字段示例见 [reference/platform-api.md](reference/platform-api.md)。
+
+3. （可选）若 Portal 已登录且需核对实例级配置，可调用：
+
+```bash
+curl -s -H "Cookie: <session>" "http://localhost:8000/api/v1/workspaces/{slug}/theme"
+```
+
+合并 `default_agent`（工作空间实例）与 `theme.default_agents`（主题允许列表）。
+
+4. API 不可用时：告知用户启动 platform-api（默认 `localhost:8000`），或经用户确认后回退读取本地 `AI_STUDIO/config/themes.yaml`（仅作兜底）。
+
+5. **待同步 Agent 列表** = 步骤 2 的 `theme.default_agents`；确保包含 `config.json` 的 `default_agent`，否则 **停止** 并提示配置不一致。
 
 将列表写入同步报告，供用户确认。
 
@@ -131,7 +153,7 @@ git status
 ```text
 - [ ] 0. context-repo 存在（否则 clone）
 - [ ] 1. 在 context-repo 完成 create/edit/delete
-- [ ] 2. 从 .ai_studio/config.json 解析 Agent 列表
+- [ ] 2. 读 config.json + 调 GET /api/v1/themes/{theme_id} 得到 default_agents
 - [ ] 3. 按 agents/<agent_id>.md 同步到工作空间
 - [ ] 4. 生效检查（映射文档中的检查项）
 - [ ] 5. 调试运行（用户触发 Agent 验证）
@@ -149,3 +171,4 @@ git status
 
 - 资源编写约定：[reference/resource-conventions.md](reference/resource-conventions.md)
 - Agent 同步映射：`agents/<agent_id>.md`
+- 平台 API 说明：[reference/platform-api.md](reference/platform-api.md)

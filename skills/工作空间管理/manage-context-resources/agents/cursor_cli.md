@@ -6,7 +6,7 @@ Agent id：`cursor_cli`
 ## 生效前提
 
 - 工作空间 `.ai_studio/config.json` 的 `default_agent` 为 `cursor_cli`，或
-- 该 Agent 出现在当前 `theme` 的 `default_agents` 列表中
+- `cursor_cli` 出现在 `GET /api/v1/themes/{theme_id}` 返回的 `theme.default_agents` 中（`theme_id` 取自 `config.json` 的 `theme`）
 
 ## 同步映射
 
