@@ -1,26 +1,27 @@
 ---
 name: manage-context-resources
 description: >-
-  在 context-repo 中编写、调试、同步 Skill/Command/MCP/SubAgent/Rules 等资源，
+  在 context-repo 中编写、调试、同步 Skill/Command/MCP/SubAgent/Rules/context_actions 等资源，
   并按工作空间 Agent 配置同步到生效目录；支持 Git 提交或恢复远端版本。
-  在用户维护 Agent 资源、同步 context-repo、调试 Skill/Command/MCP 时使用。
+  在用户维护 Agent 资源、同步 context-repo、调试 Skill/Command/MCP 或 Browse 上下文动作时使用。
 disable-model-invocation: true
 ---
 
 # Context 资源管理与同步
 
-组织级 Agent 交互资源（Skill、Command、MCP、SubAgent、Rules）的**唯一编辑源**是 `context-repo`。  
+组织级 Agent 交互资源（Skill、Command、MCP、SubAgent、Rules、context_actions）的**唯一编辑源**是 `context-repo`。  
 工作空间内 Agent 实际读取的是**同步后的本地目录**，改 context-repo 不会自动生效。
 
 ## context-repo 目录约定
 
 ```text
 context-repo/
-├── skills/       # Cursor / Agent Skill（SKILL.md）
-├── rules/        # Agent Rules
-├── commands/     # Command 定义
-├── mcps/         # MCP Server 配置与说明
-└── sub_agents/   # SubAgent 角色定义
+├── context_actions.yaml   # Browse / Portal 上下文动作（v2 schema）
+├── skills/                # Cursor / Agent Skill（SKILL.md）
+├── rules/                 # Agent Rules
+├── commands/              # Command 定义
+├── mcps/                  # MCP Server 配置与说明
+└── sub_agents/            # SubAgent 角色定义
 ```
 
 ## 输入
@@ -28,7 +29,7 @@ context-repo/
 | 项 | 必填 | 说明 |
 |----|------|------|
 | 操作类型 | 是 | `create` / `edit` / `delete` / `sync` / `debug` / `version` |
-| 资源类型 | 视操作 | `skill` / `command` / `mcp` / `sub_agent` / `rules` |
+| 资源类型 | 视操作 | `skill` / `command` / `mcp` / `sub_agent` / `rules` / `context_actions` |
 | context-repo 路径 | 否 | 缺省为 `<工作空间根>/context-repo/` |
 | 目标 Agent | 否 | 缺省同步配置中全部可用 Agent |
 
@@ -57,6 +58,7 @@ git clone https://github.com/dinght-1975/context-repo.git
 | Command | `context-repo/commands/` | 按主题或模块分子目录 |
 | MCP | `context-repo/mcps/` | Server 定义、启用说明 |
 | SubAgent | `context-repo/sub_agents/` | 角色 id、职责、约束 |
+| context_actions | `context-repo/context_actions.yaml` | Browse 文件/目录 ⋮ 菜单绑定的 Skill 或 Command；同步目标见 `agents/<agent_id>.md` |
 
 **删除**：在 context-repo 中删除文件或目录，再执行同步以移除工作空间副本。
 
@@ -111,10 +113,11 @@ curl -s -H "Cookie: <session>" "http://localhost:8000/api/v1/workspaces/{slug}/t
 
 通用同步原则：
 
-1. **源**：`context-repo/<资源目录>/`
-2. **目标**：映射文档中的 Agent 工作目录
+1. **源**：`context-repo/<资源目录>/` 或根目录单文件（如 `context_actions.yaml`）
+2. **目标**：映射文档中的 Agent context 目录（`cursor_cli` 为 `.cursor/`）
 3. **方式**：复制或更新（保留映射文档指定的排除项）；默认不删除工作空间独有文件，**删除**类 sync 须映射文档允许且用户确认
-4. 同步完成后逐项核对映射文档中的 **生效检查**
+4. 同步 `context_actions` 前，先确认其中引用的 Skill 已同步到同一 Agent 的 skills 目录
+5. 同步完成后逐项核对映射文档中的 **生效检查**
 
 未执行本步前，Portal / Agent **不会**加载 context-repo 中的最新内容。
 
@@ -154,8 +157,8 @@ git status
 - [ ] 0. context-repo 存在（否则 clone）
 - [ ] 1. 在 context-repo 完成 create/edit/delete
 - [ ] 2. 读 config.json + 调 GET /api/v1/themes/{theme_id} 得到 default_agents
-- [ ] 3. 按 agents/<agent_id>.md 同步到工作空间
-- [ ] 4. 生效检查（映射文档中的检查项）
+- [ ] 3. 按 agents/<agent_id>.md 同步到工作空间（含 context_actions.yaml，若存在）
+- [ ] 4. 生效检查（映射文档中的检查项；context_actions 须校验 skill id 已在 Agent 目录存在）
 - [ ] 5. 调试运行（用户触发 Agent 验证）
 - [ ] 6. 版本管理：push 或 restore（用户选择）
 ```

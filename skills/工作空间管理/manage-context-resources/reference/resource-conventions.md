@@ -42,6 +42,30 @@ commands/<theme-or-module>/<command-id>.md
 - 同步到 `.ai_studio/mcp.json` 的 `enabled` 字段说明
 - 凭据来源（勿写明文 secret）
 
+## context_actions（`context_actions.yaml`）
+
+工作空间级 Browse / Portal **上下文动作**配置，覆盖平台默认 `config/context_actions.yaml`。
+
+- **编辑位置**：`context-repo/context_actions.yaml`（根目录单文件；亦可用 `.json`）
+- **同步目标**：见 `agents/<agent_id>.md`（`cursor_cli` → `.cursor/context_actions.yaml`）
+- **schema**：`version: 2`，按 `themes.<theme_id>.files|directories` 分组
+- **skill 引用**：`skills[].id`（或 `skill_id`）须与 `.cursor/skills/<skill-name>/` 目录名一致，且该 Skill 已同步
+- **文件匹配**：`files[].suffix` 或 `suffixes`（如 `.md`、`.py`）
+- **目录匹配**：`directories[]` 直接列出目录级 Skill 动作（如 documentation 主题）
+
+示例：
+
+```yaml
+version: 2
+themes:
+  admin:
+    directories:
+      - id: directory-stats
+        label: 目录统计
+```
+
+编辑后须 **sync** 到 Agent context 目录；仅改 context-repo 不会在 Portal 生效。
+
 ## SubAgent（`sub_agents/`）
 
 建议每个角色一个定义文件，包含：
