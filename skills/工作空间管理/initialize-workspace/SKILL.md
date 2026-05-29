@@ -81,9 +81,6 @@ disable-model-invocation: true
 ```bash
 cp -R "$AI_STUDIO_ROOT/workspace_example" "$HOME/AI_STUDIO_WS/<slug>"
 ```
-
-删除 `.ai_studio/conversations/_example/`、`.ai_studio/tasks/_example/`；移除 `*.example` 配置文件。
-
 ### 4. 写入 config.json
 
 基础字段：
@@ -112,8 +109,6 @@ cp -R "$AI_STUDIO_ROOT/workspace_example" "$HOME/AI_STUDIO_WS/<slug>"
 1. Command：从 `context-repo/commands/` 复制或链接到工作空间约定路径
 2. Rules：确保 `.cursor/rules/` 存在；合并 `context-repo/rules/` 中主题文档指定的规则
 3. Cursor Skill：按主题文档从 `context-repo/skills/` 装配
-
-**Git**（clone / pull / commit / push）不在本 Skill 中执行。
 
 ### 7. 创建初始目录
 
