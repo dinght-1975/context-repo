@@ -2,19 +2,25 @@
 # skill id 须存在于默认 agent 的 .cursor/skills；可用 id 或 skill_id 字段
 # execution: task（默认，后台任务）| interactive / chat（交互式临时对话，不保存会话）
 #
-# themes.common（或顶层 common:）：全主题通用 Skill，与当前工作空间 theme 叠加；
-# 同一 skill_id 在专用 theme 与 common 均配置时，专用 theme 优先（先匹配）。
+# themes.common（或顶层 common:）：全主题通用 Skill，与当前工作空间 theme 叠加
+#
+# 文件匹配：标准 glob（fnmatch / pathlib）
+#   - pattern: "*.md"          按文件名
+#   - pattern: "src/**/*.py"  按工作空间相对路径（含 / 时）
+#   - pattern: "*"           任意文件（YAML 须加引号）
+#   - patterns: ["*.py", "*.ts"]
+# 兼容旧字段：suffix: .md → *.md；suffixes: [.py, .ts]；match_all_files: true → *
 
 version: 2
 
 themes:
   common:
     files:
-      - suffix: .md
+      - pattern: "*.md"
         skills:
           - id: doc-review-file
             label: 审阅文档（通用）
-      - suffix: *
+      - pattern: "*"
         skills:
           - id: file-info-preview
             label: 文件总结（通用）
@@ -25,13 +31,13 @@ themes:
 
   documentation:
     files:
-      - suffix: .md
+      - pattern: "*.md"
         skills:
           - id: doc-review-file
             label: 审阅此文档
           - id: doc-polish-file
             label: 润色此文档
-      - suffix: .mdx
+      - pattern: "*.mdx"
         skills:
           - id: doc-review-file
             label: 审阅此文档
@@ -47,7 +53,7 @@ themes:
 
   standard:
     files:
-      - suffixes: [.py, .ts, .tsx, .js, .jsx, .go, .java]
+      - patterns: ["*.py", "*.ts", "*.tsx", "*.js", "*.jsx", "*.go", "*.java"]
         skills:
           - id: std-file-review
             label: 审查此文件
