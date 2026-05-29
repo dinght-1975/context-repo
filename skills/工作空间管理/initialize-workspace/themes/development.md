@@ -18,7 +18,7 @@
 docs/
 # 可选，建议创建空目录
 ```
-git clone http://10.1.249.117:8282/VerisLite3.0/cpp_busi_arm64_pgsql.git/mediation 
+git clone http://10.1.249.117:8282/VerisLite3.0/cpp_busi_arm64_pgsql.git,跳过大于20M的文件和归档文件。 
 
 创建一个python3 的虚拟环境。.venv.
 
